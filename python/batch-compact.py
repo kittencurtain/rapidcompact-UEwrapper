@@ -23,7 +23,7 @@ def askUserForFiles():
   pass
 
 
-def runCLICompact(assetList)
+def runCLICompact(assetList):
   """Pseudo:
   1. for each item in the asset list,
     1a. create a subdirectory for its output
@@ -33,7 +33,7 @@ def runCLICompact(assetList)
   pass
 
 
-def checkForMoreFiles()
+def checkForMoreFiles():
   """Pseudo:
   1. check if the user would like to process more files
   2. if the input is not empty, check if it is valid (y/n)
