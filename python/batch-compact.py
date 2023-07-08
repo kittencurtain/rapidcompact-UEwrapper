@@ -13,6 +13,7 @@ import subprocess
 
 # Global variables
 CWD = os.getcwd()
+ALLOWED_FILETYPES = ["gltf", "glb", "usdz", "usd", "fbx", "obj", "stl", "ply", "step", "iges", "ctm"]
 
 
 def getUserInput():
@@ -36,7 +37,7 @@ def askUserForFiles():
     internalAssetList = []
     
     while userResponse := getUserInput():
-        fullPath = CWD + "/" + userResponse
+        fullPath = os.path.join(CWD + "/", userResponse)
         print(fullPath)
         
         # check if response exists, ask again if not
@@ -47,12 +48,12 @@ def askUserForFiles():
         
         # check if response is a file, assume folder otherwise
         if os.path.isfile(fullPath):
-            internalAssetList.append(fullPath)
+            internalAssetList.append(userResponse)
             print("Added {} to be processed.".format(userResponse))
         else:
             filesInFolder = os.listdir(fullPath)
             for asset in filesInFolder:
-                internalAssetList.append(fullPath + "/" + asset)
+                internalAssetList.append(asset)
                 print("Added {} to be processed.".format(asset))
     
     #check if the list is empty, run recursively if so
@@ -79,8 +80,25 @@ def runCLICompact(assetList):
         print("No files/folders to process. Skipping compacting...")
         return
     else:
-        #process each file
-        pass
+        for file in assetList:
+            # check if the filetype is supported, skip it and tell the user if not
+            fileSplit = file.split(".")
+            if fileSplit[-1] not in ALLOWED_FILETYPES:
+                print("File {} is of an unsupported type. Skipping file...".format(file))
+                continue
+            else:
+                # create a subdirectory in the working directory with the file name
+                try:
+                    os.mkdir(os.path.join(CWD + "/", fileSplit[0]))
+                """if there are two files with the same name but different file types and
+                the directories would clash create the directory with a dash and the file
+                type instead"""
+                except OSError as error:
+                    newName = fileSplit[0] + "-" + fileSplit[1]
+                    print("Folder {original} could not be created, using {new} instead.".format(original=fileSplit[1], new=newName))
+                    os.mkdir(os.path.join(CWD + "/", newName))
+                
+                # TODO: run CLI compact comand here
 
 
 def checkForMoreFiles():
