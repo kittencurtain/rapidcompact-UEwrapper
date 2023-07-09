@@ -1,6 +1,8 @@
 """
 file: batch-compact.py
-description: Basic wrapper for RapidCompact's CLI to batch-compact multiple 3D files and prepare them for import into Unreal Engine. This module is the main script for the wrapper.
+description: Basic wrapper for RapidCompact's CLI to batch-compact multiple 3D
+files and prepare them for import into Unreal Engine. This module is the main
+script for the wrapper.
 language: python3
 author: Aidan Grant / kittencurtain
 """
@@ -12,20 +14,21 @@ import subprocess
 
 # Global variables
 CWD = os.getcwd()
-ALLOWED_FILETYPES = ["gltf", "glb", "usdz", "usd", "fbx", "obj", "stl", "ply", "step", "iges", "ctm"]
+ALLOWED_FILETYPES = ["gltf", "glb", "usdz", "usd", "fbx", "obj", "stl",
+                     "ply", "step", "iges", "ctm"]
 
 
 def askUserForFiles():
     """
-    Asks the user for the files or folders they would like to process. If the user enters
-    nothing, the current list will be returned. Errors will be reported if the file
-    or folder entered does not exist on the system.
+    Asks the user for the files or folders they would like to process.
+    If the user enters nothing, the current list will be returned. Errors will
+    be reported if the file or folder entered does not exist on the system.
     """
     # list creation
     internalAssetList = []
     
     while userResponse := input("Please enter a file or folder (leave blank to run) > "):
-        fullPath = os.path.join(CWD + "/", userResponse)
+        fullPath = os.path.join(CWD, userResponse)
         print(fullPath)
         
         # check if response exists, ask again if not
@@ -41,12 +44,12 @@ def askUserForFiles():
         else:
             filesInFolder = os.listdir(fullPath)
             for asset in filesInFolder:
-                internalAssetList.append(asset)
+                internalAssetList.append(os.path.join(fullPath,asset))
                 print("Added {} to be processed.".format(asset))
     
     #check if the list is empty, run recursively if so
     if not internalAssetList:
-        continueResponse = input("There are no files or folders to process. Continue? > y/n")
+        continueResponse = input("There are no files or folders to process. Continue? y/n > ")
         if continueResponse and continueResponse.lower() == "y":
             askUserForFiles()
         else:
@@ -55,13 +58,21 @@ def askUserForFiles():
     return internalAssetList
 
 
+def runCommand(cmd):
+    """
+    Helper function for runCLICompact. Runs a command on the command line, and
+    returns the subprocess object.
+    """
+    completed = subprocess.run(cmd, capture_output=True)
+    return completed
+
+
 def runCLICompact(assetList):
-    """Pseudo:
-    1. for each item in the asset list,
-        1a. check if it is a valid filetype
-        1b. create a subdirectory for its output
-        1c. compact the asset & export it to the subdirectory
-        1d. print debug information for success/failure
+    """
+    Primary command for the wrapper. Checks if the asset is a valid type, then
+    processes a simple compact command with each file, printing a success or
+    failure message. Exports the files to the same location with the same name
+    in the .glb format.
     """
     # guard against empty list
     if not assetList:
@@ -75,18 +86,12 @@ def runCLICompact(assetList):
                 print("File {} is of an unsupported type. Skipping file...".format(file))
                 continue
             else:
-                """create a subdirectory in the working directory with the file name
-                if there are two files with the same name but different file types and
-                the directories would clash create the directory with a dash and the file
-                type instead"""
-                try:
-                    os.mkdir(os.path.join(CWD + "/", fileSplit[0]))
-                except OSError as error:
-                    newName = fileSplit[0] + "-" + fileSplit[1]
-                    print("Folder {original} could not be created, using {new} instead.".format(original=fileSplit[0], new=newName))
-                    os.mkdir(os.path.join(CWD + "/", newName))
-                
-                # TODO: run CLI compact comand here
+                returnData = runCommand("rpdx -i " + file + " -c -e " + fileSplit[0] + ".glb")
+                if returnData.returncode != 0:
+                    print("Error with {filename}: {err}".format(filename=file, err=returnData.stderr))
+                else:
+                    print("Processed {filename}, continuing...".format(filename=file))
+        print("All files processed.")
 
 
 def checkForMoreFiles():
@@ -103,11 +108,6 @@ def checkForMoreFiles():
 
 
 def main():
-    """Pseudo:
-    1. run the CLI batch compact with the files provided by the user
-    2. print a success/failure line for each file
-    3. check to see if the user would like to process more files
-    """
     print('''
     Please input either a single file or a single folder.
     You will be asked for files/folders multiple times.
