@@ -81,7 +81,7 @@ def runCLICompact(assetList):
     else:
         for file in assetList:
             # check if the filetype is supported, skip it and tell the user if not
-            fileSplit = file.split(".")
+            fileSplit = os.path.splitext(file)
             if fileSplit[-1] not in ALLOWED_FILETYPES:
                 print("File {} is of an unsupported type. Skipping file...".format(file))
                 continue
