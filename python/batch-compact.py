@@ -83,7 +83,7 @@ def runCLICompact(assetList):
             # check if the filetype is supported, skip it and tell the user if not
             fileSplit = os.path.splitext(file)
             if fileSplit[-1] not in ALLOWED_FILETYPES:
-                print("File {} is of an unsupported type. Skipping file...".format(file))
+                print("WARNING: File {} is of an unsupported type. Skipping file...".format(file))
                 continue
             else:
                 returnData = runCommand("rpdx -i " + file + " -c -e " + fileSplit[0] + ".glb")
@@ -102,7 +102,7 @@ def checkForMoreFiles():
     userResponse = input("Would you like to process more files? y/n > ")
     if userResponse:
         if userResponse.lower() == "y":
-            return True        
+            return True
     
     return False
 
