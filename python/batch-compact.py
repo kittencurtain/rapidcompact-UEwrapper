@@ -13,9 +13,10 @@ import subprocess
 
 
 # Global variables
+os.chdir(os.path.dirname(os.path.abspath(__file__))) # change directory to current file's directory before setting global CWD variable
 CWD = os.getcwd()
-ALLOWED_FILETYPES = ["gltf", "glb", "usdz", "usd", "fbx", "obj", "stl",
-                     "ply", "step", "iges", "ctm"]
+ALLOWED_FILETYPES = [".gltf", ".glb", ".usdz", ".usd", ".fbx", ".obj", ".stl",
+                     ".ply", ".step", ".iges", ".ctm"]
 
 
 def askUserForFiles():
@@ -29,7 +30,6 @@ def askUserForFiles():
     
     while userResponse := input("Please enter a file or folder (leave blank to run) > "):
         fullPath = os.path.join(CWD, userResponse)
-        print(fullPath)
         
         # check if response exists, ask again if not
         exists = os.path.exists(fullPath)
